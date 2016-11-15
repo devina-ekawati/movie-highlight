@@ -12,5 +12,7 @@ imdb = MovieCriticSite("IMDB")
 #IMDB ga punya page khusus critics :(
 imdb.setAudiences("http://www.imdb.com/title/$film$/reviews?start=$page$", "//div[@id=\"tn15content\"]//div/h2/text()|//div[@class=\"review_body\"]/span/text()")
 
-#print('Reviews: ', imdb.getReview('tt1211837', 0, 'audiences'))
-print('Reviews: ', mc.getReview('doctor-strange', 1, 'audiences'))
+print('Reviews: ', imdb.getReview('tt1211837', 0, 'audiences'))
+# print('Reviews: ', mc.getReview('doctor-strange', 1, 'audiences'))
+# print('Reviews: ', rt.getReview('doctor_strange_2016', 1, 'audiences'))
+
