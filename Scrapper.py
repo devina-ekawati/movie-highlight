@@ -15,6 +15,7 @@ imdb = MovieCriticSite("IMDB")
 imdb.setAudiences("http://www.imdb.com/title/$film$/reviews?start=$page$", "//div[@id=\"tn15content\"]//div/h2/text()|//div[@class=\"review_body\"]/span/text()")
 imdb.setSearch("http://www.imdb.com/find?ref_=nv_sr_fn&q=$film$&s=all", "substring((//table[@class=\"findList\"])[1]/tr[@class=\"findResult odd\"][1]/td[@class=\"primary_photo\"]/a/@href, 8, 9)")
 
-print('Reviews: ', imdb.getReview('Doctor Strange', 0, 'audiences'))
-print('Reviews: ', mc.getReview('Doctor Strange', 1, 'audiences'))
-print('Reviews: ', rt.getReview('Doctor Strange', 1, 'audiences'))
+title = "Harry Potter"
+print('Reviews: ', imdb.getReview(title, 0, 'audiences'))
+# print('Reviews: ', mc.getReview(title, 1, 'audiences'))
+print('Reviews: ', rt.getReview(title, 1, 'audiences'))
