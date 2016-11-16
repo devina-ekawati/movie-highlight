@@ -27,19 +27,6 @@ def getTopTerm(lines):
                         topTerm[newitem] = 1
                     else:
                         topTerm[newitem] = topTerm[newitem] + 1
-    # with open(path, 'r') as text_file:
-    #     lines = text_file.readlines()
-    #     for text in lines:
-    #         sentences = sent_tokenize(text.strip())
-    #         for sentence in sentences:
-    #             dependencyTree = [list(parse.triples()) for parse in depParser.raw_parse(sentence)]
-    #             for item in dependencyTree[0]:
-    #                 if (item[1] == 'amod'):
-    #                     newitem = (item[0][0],item[2][0])
-    #                     if newitem not in topTerm:
-    #                         topTerm[newitem] = 1
-    #                     else:
-    #                         topTerm[newitem] = topTerm[newitem] + 1
 
     topTerm = sorted(topTerm.items(), key=operator.itemgetter(1))[-10:]
 
