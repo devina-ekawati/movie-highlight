@@ -18,4 +18,4 @@ imdb.setSearch("http://www.imdb.com/find?ref_=nv_sr_fn&q=$film$&s=all", "substri
 title = "Harry Potter"
 print('Reviews: ', imdb.getReview(title, 0, 'audiences'))
 # print('Reviews: ', mc.getReview(title, 1, 'audiences'))
-print('Reviews: ', rt.getReview(title, 1, 'audiences'))
+# print('Reviews: ', rt.getReview(title, 1, 'audiences'))
