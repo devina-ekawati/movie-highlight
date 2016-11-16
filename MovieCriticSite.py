@@ -1,5 +1,6 @@
 from lxml import html
 import requests
+import string
 
 class MovieCriticSite:
 	def __init__(self, name):
@@ -30,7 +31,7 @@ class MovieCriticSite:
 			film = self.getFilmID(film)
 			headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
 			page = requests.get(data['link'].replace("$page$", str(page_num)).replace("$film$", film), headers=headers)
-			tree = html.fromstring(page.content)
+			tree = html.fromstring((page.content).decode("utf8", errors='replace').encode("utf8", errors='replace'))
 
 			reviews = tree.xpath(data['xpath'])
 			# reviews = list(map(str.rstrip, reviews))
