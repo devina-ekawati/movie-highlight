@@ -9,7 +9,6 @@ from MovieCriticSite import MovieCriticSite
 
 depParser = StanfordDependencyParser(model_path="edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz")
 listTopReviews = []
-lines = []
 
 def init():
     java_path = "C:/Program Files/Java/jdk1.8.0_101/bin/java.exe"
@@ -48,9 +47,6 @@ def getTopTerm(path):
         string = term[0][1] + " " + term[0][0]
         listTopReviews.append(string)
 
-    return topTerm
-
-def printReviewSequences(topTerm):
     seq = {key: [] for key in listTopReviews}
 
     for line in lines:
@@ -61,10 +57,12 @@ def printReviewSequences(topTerm):
 
     with open("result.txt", "w") as text_file:
         for highlight in listTopReviews:
-            text_file.write(highlight)
-        for review in seq[highlight]:
-            text_file.write(review)
+            text_file.write(highlight.encode("utf-8")+ "\n")
+            for review in seq[highlight]:
+                text_file.write(review.encode("utf-8"))
+            text_file.write("\n")
     text_file.close()
+    
 
 def scrapMovieReview(title):
     rt = MovieCriticSite("Rotten Tomatoes")
@@ -89,10 +87,8 @@ def main():
     init()
     path = "rottentomatoes.txt"
     title = "Doctor Stranger"
-    topTerm = getTopTerm(path)
-    print topTerm
-    printReviewSequences(topTerm)
-    # scrapMovieReview(title)
+    # getTopTerm(path)
+    scrapMovieReview(title)
 
 if __name__ == "__main__":
     main()
