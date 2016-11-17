@@ -34,6 +34,7 @@ class MovieCriticSite:
 			tree = html.fromstring((page.content).decode("utf8", errors='replace').encode("utf8", errors='replace'))
 
 			reviews = tree.xpath(data['xpath'])
+			# reviews = list(map(str.rstrip, reviews))
 			reviews = list(filter(None, reviews))
 			return reviews
 

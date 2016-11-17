@@ -19,7 +19,7 @@ print('Reviews: ', imdb.getReview('Doctor Strange', 0, 'audiences'))
 # print('Reviews: ', mc.getReview('Doctor Strange', 1, 'audiences'))
 print('Reviews: ', rt.getReview('Doctor Strange', 1, 'audiences'))
 
-title = "Harry Potter"
-#print('Reviews: ', imdb.getReview(title, 0, 'audiences'))
+title = "Doctor Strange"
+print('Reviews: ', imdb.getReview(title, 0, 'audiences'))
 #print('Reviews: ', mc.getReview(title, 1, 'audiences'))
 #print('Reviews: ', rt.getReview(title, 1, 'audiences'))

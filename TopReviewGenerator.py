@@ -14,38 +14,25 @@ def init():
     java_path = "C:/Program Files/Java/jdk1.8.0_101/bin/java.exe"
     os.environ['JAVAHOME'] = java_path
 
-def getTopTerm(path):
+def getTopTerm(lines):
     topTerm = {}
-    # for text in lines:
-    #     sentences = sent_tokenize(text.strip())
-    #     for sentence in sentences:
-    #         dependencyTree = [list(parse.triples()) for parse in depParser.raw_parse(sentence)]
-    #         for item in dependencyTree[0]:
-    #             if (item[1] == 'amod'):
-    #                 newitem = (item[0][0],item[2][0])
-    #                 if newitem not in topTerm:
-    #                     topTerm[newitem] = 1
-    #                 else:
-    #                     topTerm[newitem] = topTerm[newitem] + 1
-    with open(path, 'r') as text_file:
-        lines = text_file.readlines()
-        for text in lines:
-            sentences = sent_tokenize(text.strip())
-            for sentence in sentences:
-                dependencyTree = [list(parse.triples()) for parse in depParser.raw_parse(sentence)]
-                for item in dependencyTree[0]:
-                    if (item[1] == 'amod'):
-                        newitem = (item[0][0],item[2][0])
-                        if newitem not in topTerm:
-                            topTerm[newitem] = 1
-                        else:
-                            topTerm[newitem] = topTerm[newitem] + 1
+    for text in lines:
+        sentences = sent_tokenize(text.strip().encode('utf8'))
+        for sentence in sentences:
+            dependencyTree = [list(parse.triples()) for parse in depParser.raw_parse(sentence)]
+            for item in dependencyTree[0]:
+                if (item[1] == 'amod'):
+                    newitem = (item[0][0],item[2][0])
+                    if newitem not in topTerm:
+                        topTerm[newitem] = 1
+                    else:
+                        topTerm[newitem] = topTerm[newitem] + 1
 
     topTerm = sorted(topTerm.items(), key=operator.itemgetter(1))[-10:]
 
     for term in topTerm:
         string = term[0][1] + " " + term[0][0]
-        listTopReviews.append(string)
+        listTopReviews.append(string.encode('utf8'))
 
     seq = {key: [] for key in listTopReviews}
 
@@ -53,7 +40,7 @@ def getTopTerm(path):
         for highlight in listTopReviews:
             tmp = highlight.split(" ")
             if (tmp[0] in line and tmp[1] in line):
-                seq[highlight].append(line)
+                seq[highlight].append(line.encode('utf8'))
 
     with open("result.txt", "w") as text_file:
         for highlight in listTopReviews:
@@ -64,7 +51,7 @@ def getTopTerm(path):
     text_file.close()
     
 
-def scrapMovieReview(title):
+def scrapMovieReview(title, totalpage):
     rt = MovieCriticSite("Rotten Tomatoes")
     rt.setCritics("https://www.rottentomatoes.com/m/$film$/reviews/?page=$page$", "//div[@class=\"the_review\"]/text()")
     rt.setAudiences("https://www.rottentomatoes.com/m/$film$/reviews/?type=user&page=$page$", '//div[@class="user_review"]/text()[last()]')
@@ -80,15 +67,23 @@ def scrapMovieReview(title):
     imdb.setAudiences("http://www.imdb.com/title/$film$/reviews?start=$page$", "//div[@id=\"tn15content\"]//div/h2/text()|//div[@class=\"review_body\"]/span/text()")
     imdb.setSearch("http://www.imdb.com/find?ref_=nv_sr_fn&q=$film$&s=all", "substring((//table[@class=\"findList\"])[1]/tr[@class=\"findResult odd\"][1]/td[@class=\"primary_photo\"]/a/@href, 8, 9)")
 
-    print('Reviews: ', imdb.getReview(title, 0, 'audiences'))
+    reviews = [];
+    for i in range(0,totalpage-1):
+        for line in imdb.getReview(title, i*10, 'audiences'):
+            reviews.append(line.encode("utf-8").strip())
+        # for line in rt.getReview(title, i, 'audiences'):
+        #     reviews.append(line.encode("utf-8").strip())
 
+    return reviews
 
 def main():
     init()
     path = "rottentomatoes.txt"
-    title = "Doctor Stranger"
-    # getTopTerm(path)
-    scrapMovieReview(title)
+    title = "Doctor Strange"
+    
+    lines = scrapMovieReview(title,2)
+    print lines
+    getTopTerm(lines)
 
 if __name__ == "__main__":
     main()
