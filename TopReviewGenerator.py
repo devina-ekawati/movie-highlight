@@ -7,6 +7,7 @@ from spacy.en import English
 from spacy.symbols import *
 from MovieCriticSite import MovieCriticSite
 from datetime import datetime
+from textblob import TextBlob
 
 reload(sys)  
 sys.setdefaultencoding('utf8')
@@ -19,9 +20,13 @@ def getHighlight(docs):
         for possible_adjective in nlp(unicode(doc)):
             if (possible_adjective.dep == amod) and possible_adjective.head.pos == NOUN:
                 termFrase = possible_adjective.orth_ + ' ' + possible_adjective.head.orth_
+
                 if possible_adjective.head.head.pos == NOUN and possible_adjective.head.orth_ != possible_adjective.head.head.orth_:
                     termFrase += ' ' + possible_adjective.head.head.orth_
-                terms[termFrase] = terms.get(termFrase, 0) + 1
+
+                blob = TextBlob(termFrase)
+                if (blob.sentences[0].sentiment.polarity > 0.05 or blob.sentences[0].sentiment.polarity < -0.05):
+                    terms[termFrase] = terms.get(termFrase, 0) + 1
 
     sorted_term = sorted(terms.items(), key=operator.itemgetter(1), reverse=True)
     top_term = sorted_term[:10]
