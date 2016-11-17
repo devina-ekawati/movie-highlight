@@ -1,55 +1,31 @@
-import nltk
-import re
-from nltk.parse.stanford import StanfordDependencyParser
-from nltk.corpus import stopwords
-from nltk.tokenize import sent_tokenize
+# encoding=utf8  
+import sys
 import operator
-import os
+import nltk
+import spacy
+from spacy.en import English
+from spacy.symbols import *
 from MovieCriticSite import MovieCriticSite
+from datetime import datetime
 
-depParser = StanfordDependencyParser(model_path="edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz")
-listTopReviews = []
+reload(sys)  
+sys.setdefaultencoding('utf8')
 
-def init():
-    java_path = "C:/Program Files/Java/jdk1.8.0_101/bin/java.exe"
-    os.environ['JAVAHOME'] = java_path
+nlp = English()
 
-def getTopTerm(lines):
-    topTerm = {}
-    for text in lines:
-        sentences = sent_tokenize(text.strip().encode('utf8'))
-        for sentence in sentences:
-            dependencyTree = [list(parse.triples()) for parse in depParser.raw_parse(sentence)]
-            for item in dependencyTree[0]:
-                if (item[1] == 'amod'):
-                    newitem = (item[0][0],item[2][0])
-                    if newitem not in topTerm:
-                        topTerm[newitem] = 1
-                    else:
-                        topTerm[newitem] = topTerm[newitem] + 1
+def getHighlight(docs):
+    terms = {}
+    for doc in docs:
+        for possible_adjective in nlp(unicode(doc)):
+            if (possible_adjective.dep == amod) and possible_adjective.head.pos == NOUN:
+                termFrase = possible_adjective.orth_ + ' ' + possible_adjective.head.orth_
+                if possible_adjective.head.head.pos == NOUN and possible_adjective.head.orth_ != possible_adjective.head.head.orth_:
+                    termFrase += ' ' + possible_adjective.head.head.orth_
+                terms[termFrase] = terms.get(termFrase, 0) + 1
 
-    topTerm = sorted(topTerm.items(), key=operator.itemgetter(1))[-10:]
-
-    for term in topTerm:
-        string = term[0][1] + " " + term[0][0]
-        listTopReviews.append(string.encode('utf8'))
-
-    seq = {key: [] for key in listTopReviews}
-
-    for line in lines:
-        for highlight in listTopReviews:
-            tmp = highlight.split(" ")
-            if (tmp[0] in line and tmp[1] in line):
-                seq[highlight].append(line.encode('utf8'))
-
-    with open("result.txt", "w") as text_file:
-        for highlight in listTopReviews:
-            text_file.write(highlight.encode("utf-8")+ "\n")
-            for review in seq[highlight]:
-                text_file.write(review.encode("utf-8"))
-            text_file.write("\n")
-    text_file.close()
-    
+    sorted_term = sorted(terms.items(), key=operator.itemgetter(1), reverse=True)
+    top_term = sorted_term[:10]
+    return top_term
 
 def scrapMovieReview(title, totalpage):
     rt = MovieCriticSite("Rotten Tomatoes")
@@ -68,22 +44,30 @@ def scrapMovieReview(title, totalpage):
     imdb.setSearch("http://www.imdb.com/find?ref_=nv_sr_fn&q=$film$&s=all", "substring((//table[@class=\"findList\"])[1]/tr[@class=\"findResult odd\"][1]/td[@class=\"primary_photo\"]/a/@href, 8, 9)")
 
     reviews = [];
-    for i in range(0,totalpage-1):
+    for i in range(0,totalpage):
         for line in imdb.getReview(title, i*10, 'audiences'):
             reviews.append(line.encode("utf-8").strip())
-        # for line in rt.getReview(title, i, 'audiences'):
-        #     reviews.append(line.encode("utf-8").strip())
-
+        for line in rt.getReview(title, i, 'audiences'):
+            reviews.append(line.encode("utf-8").strip())
+        for line in mc.getReview(title, i, 'audiences'):
+            reviews.append(line.encode("utf-8").strip())
+        for line in rt.getReview(title, i, 'critics'):
+            reviews.append(line.encode("utf-8").strip())
+        for line in mc.getReview(title, i, 'critics'):
+            reviews.append(line.encode("utf-8").strip())
     return reviews
 
 def main():
-    init()
-    path = "rottentomatoes.txt"
-    title = "Doctor Strange"
+    tick = datetime.now()
+    title = "Fantastic Beasts"
     
-    lines = scrapMovieReview(title,2)
-    print lines
-    getTopTerm(lines)
+    reviews = scrapMovieReview(title, 5)
+    highlight = getHighlight(reviews)
+
+    print(highlight)
+    tock = datetime.now()   
+    diff = tock - tick    # the result is a datetime.timedelta object
+    print("Time Elapsed: " + str(diff.total_seconds()))
 
 if __name__ == "__main__":
     main()
