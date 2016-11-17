@@ -62,14 +62,51 @@ def scrapMovieReview(title, totalpage):
             reviews.append(line.encode("utf-8").strip())
     return reviews
 
+def is_ascii(text):
+    if isinstance(text, unicode):
+        try:
+            text.encode('ascii')
+        except UnicodeEncodeError:
+            return False
+    else:
+        try:
+            text.decode('ascii')
+        except UnicodeDecodeError:
+            return False
+    return True
+
+def hasNumbers(inputString):
+    return any(char.isdigit() for char in inputString)
+
+def getReviewsWithHighlights(highlights, reviews):
+    keys = []
+    for highlight in highlights:
+        keys.append(highlight[0])
+
+    reviewsWithHighlights = {key: [] for key in keys}
+    for review in reviews:
+        for highlight in highlights:
+            tmp = highlight[0].split(" ")
+            if (is_ascii(str(review)) and not hasNumbers(str(review))):
+                if (tmp[0] in review and tmp[1] in review):
+                    reviewsWithHighlights[highlight[0]].append(review)
+    return reviewsWithHighlights
+
 def main():
     tick = datetime.now()
     title = "Fantastic Beasts"
     
     reviews = scrapMovieReview(title, 5)
-    highlight = getHighlight(reviews)
+    highlights = getHighlight(reviews)
+    highlightReviews = getReviewsWithHighlights(highlights, reviews)
 
-    print(highlight)
+
+    for highlight in highlights:
+        print "\n" + highlight[0] + "\n"
+        for review in highlightReviews[highlight[0]]:
+            print review
+
+    # print(highlight)
     tock = datetime.now()   
     diff = tock - tick    # the result is a datetime.timedelta object
     print("Time Elapsed: " + str(diff.total_seconds()))
