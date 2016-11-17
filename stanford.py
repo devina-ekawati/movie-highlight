@@ -3,17 +3,35 @@ import re
 from nltk.collocations import *
 from nltk.corpus import stopwords
 from pattern.en import parsetree
+import warnings
 
 stopset = set(stopwords.words('english')) 
 stopset.add('A')
 stopset.add('An')
 stopset.add('The')
 
-with open('metacritics.txt', 'r') as text_file:
-    lines = text_file.readlines()
-    for text in lines:
-    	s = parsetree(text)
-    	for sentence in s:
+def is_ascii(text):
+    if isinstance(text, unicode):
+        try:
+            text.encode('ascii')
+        except UnicodeEncodeError:
+            return False
+    else:
+        try:
+            text.decode('ascii')
+        except UnicodeDecodeError:
+            return False
+    return True
+
+def hasNumbers(inputString):
+	return any(char.isdigit() for char in inputString)
+
+with open('imdb.txt', 'r') as text_file:
+	pattern = re.compile(r'\d\$,')
+	lines = text_file.readlines()
+	for text in lines:
+		s = parsetree(text)
+		for sentence in s:
 			# print sentence.chunks
 			for idx in range(0,len(sentence.chunks)):
 				if (sentence.chunks[idx].tag == "NP" or sentence.chunks[idx].tag == "ADJP"):
@@ -25,9 +43,11 @@ with open('metacritics.txt', 'r') as text_file:
 							break
 					if check:
 						for word in sentence.chunks[idx].words:
-							word = str(word).replace("/"+ word.tag + "')","")
-							word = str(word).replace("Word(u'","")
-							words.append(word)
+							if (is_ascii(str(word)) and not hasNumbers(str(word))):
+								word = str(word).replace("/"+ word.tag + "')","")
+								word = str(word).replace("Word(u'","")
+								if (re.match('^[\w-]+$', word)):
+									words.append(word)
 
 					tokens = [w for w in words if not w in stopset]
 
@@ -35,7 +55,8 @@ with open('metacritics.txt', 'r') as text_file:
 					for word in tokens:
 						candidate += word + " "
 
-					if (len(candidate.strip().split()) > 2):
+					if (len(candidate.strip().split()) > 1):
+						warnings.filterwarnings("ignore")
 						print candidate
 
 # for sentence in s:
