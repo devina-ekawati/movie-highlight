@@ -1,34 +1,46 @@
 import collections
+import re
+import itertools
 import nltk.classify.util, nltk.metrics
 from nltk.classify import NaiveBayesClassifier
 from nltk.corpus import movie_reviews
-from nltk.corpus import stopwords
-import itertools
 from nltk.collocations import BigramCollocationFinder
 from nltk.metrics import BigramAssocMeasures
+from os import listdir
+from os.path import isfile, join, dirname, abspath
 
 class SentimentAnalyzer:
 
-    def __init__(self, feature):
+    def __init__(self):
         negids = movie_reviews.fileids('neg')
         posids = movie_reviews.fileids('pos')
 
-        self.negData = [(feature(movie_reviews.words(fileids=[f])), 'neg') for f in negids]
-        self.posData = [(feature(movie_reviews.words(fileids=[f])), 'pos') for f in posids]
+        self.negData = [(self.extractBigramFeature(movie_reviews.raw(fileids=[f])), 'neg') for f in negids]
+        self.posData = [(self.extractBigramFeature(movie_reviews.raw(fileids=[f])), 'pos') for f in posids]
 
         self.trainData = self.negData + self.posData
-        self.testData = []
 
+    def extractBigramFeature(self, sentence, score_fn=BigramAssocMeasures.chi_sq, n=200):
+        # sentence = re.sub('[^A-Za-z0-9]+', '', sentence)
+        sentence = sentence.strip("\n")
+        sentence = sentence.lower()
+        words = nltk.word_tokenize(sentence)
+        bigram_finder = BigramCollocationFinder.from_words(words)
+        bigrams = bigram_finder.nbest(score_fn, n)
 
+        return dict([(ngram, True) for ngram in itertools.chain(words, bigrams)])
 
-    def classify(self):
+    def classifyReviews(self, reviews):
+        results = {}
         classifier = NaiveBayesClassifier.train(self.trainData)
 
-        for i, (feats, label) in enumerate(testfeats):
-            print classifier.classify(feats)
+        for review in reviews:
+            sentiment = classifier.classify(self.extractBigramFeature(review))
+            results.setdefault(sentiment,[]).append(review)
+
+        print results
 
     def evaluate_classifier(self):
-     
         negCutOff = len(self.negData)*3/4
         posCutOff = len(self.posData)*3/4
      
@@ -46,12 +58,14 @@ class SentimentAnalyzer:
      
         print 'accuracy:', nltk.classify.util.accuracy(classifier, testData)
 
-def bigram_word_feats(words, score_fn=BigramAssocMeasures.chi_sq, n=200):
-    bigram_finder = BigramCollocationFinder.from_words(words)
-    bigrams = bigram_finder.nbest(score_fn, n)
 
-    return dict([(ngram, True) for ngram in itertools.chain(words, bigrams)])
+if __name__ == "__main__":
+    reviews = []
 
-sa = SentimentAnalyzer(bigram_word_feats)
-sa.evaluate_classifier()
+    with open("test.txt") as f:
+        reviews = f.readlines()
+
+    sa = SentimentAnalyzer()
+    # sa.evaluate_classifier()
+    sa.classifyReviews(reviews)
 
