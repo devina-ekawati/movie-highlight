@@ -38,7 +38,7 @@ class SentimentAnalyzer:
             sentiment = classifier.classify(self.extractBigramFeature(review))
             results.setdefault(sentiment,[]).append(review)
 
-        print results
+        return results
 
     def evaluate_classifier(self):
         negCutOff = len(self.negData)*3/4

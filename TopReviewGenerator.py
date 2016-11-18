@@ -8,6 +8,8 @@ from spacy.symbols import *
 from MovieCriticSite import MovieCriticSite
 from datetime import datetime
 from textblob import TextBlob
+from textblob.sentiments import NaiveBayesAnalyzer
+from SentimentAnalyzer import SentimentAnalyzer
 
 reload(sys)  
 sys.setdefaultencoding('utf8')
@@ -51,15 +53,20 @@ def scrapMovieReview(title, totalpage):
     reviews = [];
     for i in range(0,totalpage):
         for line in imdb.getReview(title, i*10, 'audiences'):
-            reviews.append(line.encode("utf-8").strip())
+            if (is_ascii(str(line)) and not hasNumbers(str(line))):
+                reviews.append(line.encode("utf-8").strip())
         for line in rt.getReview(title, i, 'audiences'):
-            reviews.append(line.encode("utf-8").strip())
+            if (is_ascii(str(line)) and not hasNumbers(str(line))):
+                reviews.append(line.encode("utf-8").strip())
         for line in mc.getReview(title, i, 'audiences'):
-            reviews.append(line.encode("utf-8").strip())
+            if (is_ascii(str(line)) and not hasNumbers(str(line))):
+                reviews.append(line.encode("utf-8").strip())
         for line in rt.getReview(title, i, 'critics'):
-            reviews.append(line.encode("utf-8").strip())
+            if (is_ascii(str(line)) and not hasNumbers(str(line))):
+                reviews.append(line.encode("utf-8").strip())
         for line in mc.getReview(title, i, 'critics'):
-            reviews.append(line.encode("utf-8").strip())
+            if (is_ascii(str(line)) and not hasNumbers(str(line))):
+                reviews.append(line.encode("utf-8").strip())
     return reviews
 
 def is_ascii(text):
@@ -87,22 +94,34 @@ def getReviewsWithHighlights(highlights, reviews):
     for review in reviews:
         for highlight in highlights:
             tmp = highlight[0].split(" ")
-            if (is_ascii(str(review)) and not hasNumbers(str(review))):
-                if (tmp[0] in review and tmp[1] in review):
-                    reviewsWithHighlights[highlight[0]].append(review)
+            if (tmp[0] in review and tmp[1] in review):
+                reviewsWithHighlights[highlight[0]].append(review)
     return reviewsWithHighlights
 
 def main():
     tick = datetime.now()
-    title = "Fantastic Beasts"
+    title = "Doctor Strange"
     
     reviews = scrapMovieReview(title, 5)
+
+
+    sa = SentimentAnalyzer()
+    sentiment = sa.classifyReviews(reviews)
+
+    print title + "\n"
+
+    total = len(sentiment["neg"]) + len(sentiment["pos"])
+    print "negative review : " + str(len(sentiment["neg"])) + "\n"
+    print "positive review : " + str(len(sentiment["pos"])) + "\n"
+    print "======================"
+
     highlights = getHighlight(reviews)
     highlightReviews = getReviewsWithHighlights(highlights, reviews)
 
-
     for highlight in highlights:
+        print "======================="
         print "\n" + highlight[0] + "\n"
+        print "======================="
         for review in highlightReviews[highlight[0]]:
             print review
 
