@@ -1,9 +1,8 @@
-from TopReviewGenerator import TopReviewGenerator 
+from SentimentAnalyzer import SentimentAnalyzer 
 
-review = TopReviewGenerator("Doctor Strange")
-print(review.getTimeElapsed())
+# review = TopReviewGenerator("Doctor Strange")
+# print(review.getAllReviews())
+# print(review.getTimeElapsed())
 
-review.getHighlight()
-review.getHighlightThread()
-
-
+sa = SentimentAnalyzer()
+sa.prepareBigramData()

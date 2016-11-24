@@ -16,10 +16,9 @@ class SentimentAnalyzer:
 
     def __init__(self):
         self.results = {}
-        source = open('data/trainData', 'rb').read()
-        self.trainData = eval(source)
-        self.classifier = NaiveBayesClassifier.train(self.trainData)
-
+        #source = open('data/trainData', 'rb').read()
+        #self.trainData = eval(source)
+        #self.classifier = NaiveBayesClassifier.train(self.trainData)
 
     def prepareBigramData(self):
         negids = movie_reviews.fileids('neg')
