@@ -79,24 +79,34 @@ class TopReviewGenerator:
         reviews = [];
         for i in range(0,totalpage):
             for line in imdb.getReview(title, i*10, 'audiences'):
-                if (self.is_ascii(line.encode('utf-8'))):
+                if (is_ascii(str(line)) and not hasNumbers(str(line))):
                     reviews.append(line.encode("utf-8").strip())
             for line in rt.getReview(title, i, 'audiences'):
-                if (self.is_ascii(line.encode('utf-8'))):
+                if (is_ascii(str(line)) and not hasNumbers(str(line))):
                     reviews.append(line.encode("utf-8").strip())
             for line in mc.getReview(title, i, 'audiences'):
-                if (self.is_ascii(line.encode('utf-8'))):
+                if (is_ascii(str(line)) and not hasNumbers(str(line))):
                     reviews.append(line.encode("utf-8").strip())
             for line in rt.getReview(title, i, 'critics'):
-                if (self.is_ascii(line.encode('utf-8'))):
+                if (is_ascii(str(line)) and not hasNumbers(str(line))):
                     reviews.append(line.encode("utf-8").strip())
-        for line in mc.getReview(title, 0, 'critics'):
-            if (self.is_ascii(line.encode('utf-8'))):
-                reviews.append(line.encode("utf-8").strip())
+            for line in mc.getReview(title, i, 'critics'):
+                if (is_ascii(str(line)) and not hasNumbers(str(line))):
+                    reviews.append(line.encode("utf-8").strip())
         return reviews
 
-    def is_ascii(self, text):
-        return all(c < 128 for c in text)
+    def is_ascii(text):
+        if isinstance(text, unicode):
+            try:
+                text.encode('ascii')
+            except UnicodeEncodeError:
+                return False
+        else:
+            try:
+                text.decode('ascii')
+            except UnicodeDecodeError:
+                return False
+    return True
 
     def hasNumbers(self, inputString):
         return any(char.isdigit() for char in inputString)
