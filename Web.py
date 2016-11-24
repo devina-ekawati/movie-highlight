@@ -1,3 +1,4 @@
+# encoding=utf8  
 import os
 import random
 from flask import Flask, request, session, redirect, url_for, render_template
@@ -18,4 +19,10 @@ def get_result():
 
     review = TopReviewGenerator(keyword)
 
-    return render_template('index.html', result=review.getHighlight())
+    highlights = review.getHighlight()
+    highlightedReview = review.getReviewsWithHighlights(highlights)
+    positiveReview = review.getPositiveReviewsCount()
+    negativeReview = review.getNegativeReviewsCount()
+    timeElapsed = review.getTimeElapsed()
+
+    return render_template('index.html', key=keyword, result=highlights, reviewPerHighlight=highlightedReview, posCount=positiveReview, negCount=negativeReview, time=timeElapsed)

@@ -22,9 +22,9 @@ class SentimentAnalyzer:
 
     def extractBigramFeature(self, sentence, score_fn=BigramAssocMeasures.chi_sq, n=200):
         # sentence = re.sub('[^A-Za-z0-9]+', '', sentence)
-        sentence = sentence.strip("\n")
+        sentence = sentence.rstrip()
         sentence = sentence.lower()
-        words = nltk.word_tokenize(sentence)
+        words = nltk.word_tokenize(str(sentence))
         bigram_finder = BigramCollocationFinder.from_words(words)
         bigrams = bigram_finder.nbest(score_fn, n)
 
@@ -56,7 +56,7 @@ class SentimentAnalyzer:
                 observed = classifier.classify(feats)
                 testSets[observed].add(i)
      
-        print 'accuracy:', nltk.classify.util.accuracy(classifier, testData)
+        #print 'accuracy:', nltk.classify.util.accuracy(classifier, testData)
 
 
 if __name__ == "__main__":

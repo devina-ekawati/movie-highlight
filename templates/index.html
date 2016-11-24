@@ -31,7 +31,31 @@
     </form>
     {% else %}
 
-      {{ result }}
+      <div class="row">
+        <center><h2>{{ key }} Reviews</h2></center>
+      </div>
+      <hr>
+
+      <center><h4>{{ posCount }} positive - {{ negCount }} negative</h4></center>
+
+      <hr>
+
+      {% for r in result %}
+        <div class="row">
+          <div class="col-md-12">
+            <h3>"{{ r[0] }}"</h3>
+            <div class="well">
+              {{ reviewPerHighlight[r[0]][0] }}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+
+      <hr>
+
+      Time elapsed: {{ time }}
+
+      <br/><br/><br/>
 
     {% endif %}
 

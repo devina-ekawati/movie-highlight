@@ -1,8 +1,8 @@
 # encoding=utf8  
-import sys
-import operator
 import nltk
+import operator
 import spacy
+import sys
 from spacy.en import English
 from spacy.symbols import *
 from MovieCriticSite import MovieCriticSite
@@ -14,14 +14,12 @@ from SentimentAnalyzer import SentimentAnalyzer
 class TopReviewGenerator:
 
     def __init__(self, film):
+        print(film)
         tick = datetime.now()
-
-        reload(sys)  
-        sys.setdefaultencoding('utf8')
-        nlp = English()
+        self.nlp = English()
 
         self.film = film        
-        self.reviews = scrapMovieReview(self.film, 5)
+        self.reviews = self.scrapMovieReview(self.film, 1)
 
         sa = SentimentAnalyzer()
         self.sentiment = sa.classifyReviews(self.reviews)
@@ -47,7 +45,7 @@ class TopReviewGenerator:
     def getHighlight(self):
         terms = {}
         for doc in self.reviews:
-            for possible_adjective in nlp(unicode(doc)):
+            for possible_adjective in self.nlp(str(doc, 'utf-8')):
                 if (possible_adjective.dep == amod) and possible_adjective.head.pos == NOUN:
                     termFrase = possible_adjective.orth_ + ' ' + possible_adjective.head.orth_
 
@@ -55,7 +53,7 @@ class TopReviewGenerator:
                         termFrase += ' ' + possible_adjective.head.head.orth_
 
                     blob = TextBlob(termFrase)
-                    if (blob.sentences[0].sentiment.polarity > 0.05 or blob.sentences[0].sentiment.polarity < -0.05):
+                    if (blob.sentences[0].sentiment.polarity > 0.15 or blob.sentences[0].sentiment.polarity < -0.15):
                         terms[termFrase] = terms.get(termFrase, 0) + 1
 
         sorted_term = sorted(terms.items(), key=operator.itemgetter(1), reverse=True)
@@ -81,34 +79,24 @@ class TopReviewGenerator:
         reviews = [];
         for i in range(0,totalpage):
             for line in imdb.getReview(title, i*10, 'audiences'):
-                if (is_ascii(str(line)) and not hasNumbers(str(line))):
+                if (self.is_ascii(line.encode('utf-8'))):
                     reviews.append(line.encode("utf-8").strip())
             for line in rt.getReview(title, i, 'audiences'):
-                if (is_ascii(str(line)) and not hasNumbers(str(line))):
+                if (self.is_ascii(line.encode('utf-8'))):
                     reviews.append(line.encode("utf-8").strip())
             for line in mc.getReview(title, i, 'audiences'):
-                if (is_ascii(str(line)) and not hasNumbers(str(line))):
+                if (self.is_ascii(line.encode('utf-8'))):
                     reviews.append(line.encode("utf-8").strip())
             for line in rt.getReview(title, i, 'critics'):
-                if (is_ascii(str(line)) and not hasNumbers(str(line))):
+                if (self.is_ascii(line.encode('utf-8'))):
                     reviews.append(line.encode("utf-8").strip())
         for line in mc.getReview(title, 0, 'critics'):
-            if (is_ascii(str(line)) and not hasNumbers(str(line))):
+            if (self.is_ascii(line.encode('utf-8'))):
                 reviews.append(line.encode("utf-8").strip())
         return reviews
 
     def is_ascii(self, text):
-        if isinstance(text, unicode):
-            try:
-                text.encode('ascii')
-            except UnicodeEncodeError:
-                return False
-        else:
-            try:
-                text.decode('ascii')
-            except UnicodeDecodeError:
-                return False
-        return True
+        return all(c < 128 for c in text)
 
     def hasNumbers(self, inputString):
         return any(char.isdigit() for char in inputString)
@@ -122,6 +110,6 @@ class TopReviewGenerator:
         for review in self.reviews:
             for highlight in highlights:
                 tmp = highlight[0].split(" ")
-                if (tmp[0] in review and tmp[1] in review):
+                if (tmp[0].encode('utf-8') in review and tmp[1].encode('utf-8') in review):
                     reviewsWithHighlights[highlight[0]].append(review)
         return reviewsWithHighlights
