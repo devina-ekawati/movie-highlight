@@ -11,124 +11,117 @@ from textblob import TextBlob
 from textblob.sentiments import NaiveBayesAnalyzer
 from SentimentAnalyzer import SentimentAnalyzer
 
-reload(sys)  
-sys.setdefaultencoding('utf8')
+class TopReviewGenerator:
 
-nlp = English()
+    def __init__(self, film):
+        tick = datetime.now()
 
-def getHighlight(docs):
-    terms = {}
-    for doc in docs:
-        for possible_adjective in nlp(unicode(doc)):
-            if (possible_adjective.dep == amod) and possible_adjective.head.pos == NOUN:
-                termFrase = possible_adjective.orth_ + ' ' + possible_adjective.head.orth_
+        reload(sys)  
+        sys.setdefaultencoding('utf8')
+        nlp = English()
 
-                if possible_adjective.head.head.pos == NOUN and possible_adjective.head.orth_ != possible_adjective.head.head.orth_:
-                    termFrase += ' ' + possible_adjective.head.head.orth_
+        self.film = film        
+        self.reviews = scrapMovieReview(self.film, 5)
 
-                blob = TextBlob(termFrase)
-                if (blob.sentences[0].sentiment.polarity > 0.05 or blob.sentences[0].sentiment.polarity < -0.05):
-                    terms[termFrase] = terms.get(termFrase, 0) + 1
+        sa = SentimentAnalyzer()
+        self.sentiment = sa.classifyReviews(self.reviews)
 
-    sorted_term = sorted(terms.items(), key=operator.itemgetter(1), reverse=True)
-    top_term = sorted_term[:10]
-    return top_term
+        tock = datetime.now()   
+        self.time = tock - tick
 
-def scrapMovieReview(title, totalpage):
-    rt = MovieCriticSite("Rotten Tomatoes")
-    rt.setCritics("https://www.rottentomatoes.com/m/$film$/reviews/?page=$page$", "//div[@class=\"the_review\"]/text()")
-    rt.setAudiences("https://www.rottentomatoes.com/m/$film$/reviews/?type=user&page=$page$", '//div[@class="user_review"]/text()[last()]')
-    rt.setSearch("https://www.rottentomatoes.com/search/?search=$film$", "substring(//section[@id=\"SummaryResults\"]//ul/li//div[@class=\"poster\"]/a/@href, 4)")
+    def getTimeElapsed(self):
+        return self.time
 
-    mc = MovieCriticSite("Metacritics")
-    mc.setCritics("http://www.metacritic.com/movie/$film$/critic-reviews?page=$page$", "//div[@class=\"summary\"]/a[@class=\"no_hover\"]/text()")
-    mc.setAudiences("http://www.metacritic.com/movie/$film$/user-reviews?page=$page$", "//div[@class=\"review_body\"]/span/span[@class=\"blurb blurb_expanded\"]/text()|//div[@class=\"review_body\"]/span/text()")
-    mc.setSearch("http://www.metacritic.com/search/all/$film$/results", "substring(//li[@class=\"result first_result\"]//a/@href, 8)")
+    def getAllReviews(self):
+        return self.reviews
 
-    imdb = MovieCriticSite("IMDB")
-    #IMDB ga punya page khusus critics :(
-    imdb.setAudiences("http://www.imdb.com/title/$film$/reviews?start=$page$", "//div[@id=\"tn15content\"]//div/h2/text()|//div[@class=\"review_body\"]/span/text()")
-    imdb.setSearch("http://www.imdb.com/find?ref_=nv_sr_fn&q=$film$&s=all", "substring((//table[@class=\"findList\"])[1]/tr[@class=\"findResult odd\"][1]/td[@class=\"primary_photo\"]/a/@href, 8, 9)")
+    def getPositiveReviewsCount(self):
+        return len(self.sentiment["pos"])
 
-    reviews = [];
-    for i in range(0,totalpage):
-        for line in imdb.getReview(title, i*10, 'audiences'):
+    def getNegativeReviewsCount(self):
+        return len(self.sentiment["neg"])
+
+    def getPositiveReviews(self):
+        return len(self.sentiment["pos"])
+
+    def getHighlight(self):
+        terms = {}
+        for doc in self.reviews:
+            for possible_adjective in nlp(unicode(doc)):
+                if (possible_adjective.dep == amod) and possible_adjective.head.pos == NOUN:
+                    termFrase = possible_adjective.orth_ + ' ' + possible_adjective.head.orth_
+
+                    if possible_adjective.head.head.pos == NOUN and possible_adjective.head.orth_ != possible_adjective.head.head.orth_:
+                        termFrase += ' ' + possible_adjective.head.head.orth_
+
+                    blob = TextBlob(termFrase)
+                    if (blob.sentences[0].sentiment.polarity > 0.05 or blob.sentences[0].sentiment.polarity < -0.05):
+                        terms[termFrase] = terms.get(termFrase, 0) + 1
+
+        sorted_term = sorted(terms.items(), key=operator.itemgetter(1), reverse=True)
+        top_term = sorted_term[:10]
+        return top_term
+
+    def scrapMovieReview(self, title, totalpage):
+        rt = MovieCriticSite("Rotten Tomatoes")
+        rt.setCritics("https://www.rottentomatoes.com/m/$film$/reviews/?page=$page$", "//div[@class=\"the_review\"]/text()")
+        rt.setAudiences("https://www.rottentomatoes.com/m/$film$/reviews/?type=user&page=$page$", '//div[@class="user_review"]/text()[last()]')
+        rt.setSearch("https://www.rottentomatoes.com/search/?search=$film$", "substring(//section[@id=\"SummaryResults\"]//ul/li//div[@class=\"poster\"]/a/@href, 4)")
+
+        mc = MovieCriticSite("Metacritics")
+        mc.setCritics("http://www.metacritic.com/movie/$film$/critic-reviews?page=$page$", "//div[@class=\"summary\"]/a[@class=\"no_hover\"]/text()")
+        mc.setAudiences("http://www.metacritic.com/movie/$film$/user-reviews?page=$page$", "//div[@class=\"review_body\"]/span/span[@class=\"blurb blurb_expanded\"]/text()|//div[@class=\"review_body\"]/span/text()")
+        mc.setSearch("http://www.metacritic.com/search/all/$film$/results", "substring(//li[@class=\"result first_result\"]//a/@href, 8)")
+
+        imdb = MovieCriticSite("IMDB")
+        #IMDB ga punya page khusus critics :(
+        imdb.setAudiences("http://www.imdb.com/title/$film$/reviews?start=$page$", "//div[@id=\"tn15content\"]//div/h2/text()|//div[@class=\"review_body\"]/span/text()")
+        imdb.setSearch("http://www.imdb.com/find?ref_=nv_sr_fn&q=$film$&s=all", "substring((//table[@class=\"findList\"])[1]/tr[@class=\"findResult odd\"][1]/td[@class=\"primary_photo\"]/a/@href, 8, 9)")
+
+        reviews = [];
+        for i in range(0,totalpage):
+            for line in imdb.getReview(title, i*10, 'audiences'):
+                if (is_ascii(str(line)) and not hasNumbers(str(line))):
+                    reviews.append(line.encode("utf-8").strip())
+            for line in rt.getReview(title, i, 'audiences'):
+                if (is_ascii(str(line)) and not hasNumbers(str(line))):
+                    reviews.append(line.encode("utf-8").strip())
+            for line in mc.getReview(title, i, 'audiences'):
+                if (is_ascii(str(line)) and not hasNumbers(str(line))):
+                    reviews.append(line.encode("utf-8").strip())
+            for line in rt.getReview(title, i, 'critics'):
+                if (is_ascii(str(line)) and not hasNumbers(str(line))):
+                    reviews.append(line.encode("utf-8").strip())
+        for line in mc.getReview(title, 0, 'critics'):
             if (is_ascii(str(line)) and not hasNumbers(str(line))):
                 reviews.append(line.encode("utf-8").strip())
-        for line in rt.getReview(title, i, 'audiences'):
-            if (is_ascii(str(line)) and not hasNumbers(str(line))):
-                reviews.append(line.encode("utf-8").strip())
-        for line in mc.getReview(title, i, 'audiences'):
-            if (is_ascii(str(line)) and not hasNumbers(str(line))):
-                reviews.append(line.encode("utf-8").strip())
-        for line in rt.getReview(title, i, 'critics'):
-            if (is_ascii(str(line)) and not hasNumbers(str(line))):
-                reviews.append(line.encode("utf-8").strip())
-        for line in mc.getReview(title, i, 'critics'):
-            if (is_ascii(str(line)) and not hasNumbers(str(line))):
-                reviews.append(line.encode("utf-8").strip())
-    return reviews
+        return reviews
 
-def is_ascii(text):
-    if isinstance(text, unicode):
-        try:
-            text.encode('ascii')
-        except UnicodeEncodeError:
-            return False
-    else:
-        try:
-            text.decode('ascii')
-        except UnicodeDecodeError:
-            return False
-    return True
+    def is_ascii(self, text):
+        if isinstance(text, unicode):
+            try:
+                text.encode('ascii')
+            except UnicodeEncodeError:
+                return False
+        else:
+            try:
+                text.decode('ascii')
+            except UnicodeDecodeError:
+                return False
+        return True
 
-def hasNumbers(inputString):
-    return any(char.isdigit() for char in inputString)
+    def hasNumbers(self, inputString):
+        return any(char.isdigit() for char in inputString)
 
-def getReviewsWithHighlights(highlights, reviews):
-    keys = []
-    for highlight in highlights:
-        keys.append(highlight[0])
-
-    reviewsWithHighlights = {key: [] for key in keys}
-    for review in reviews:
+    def getReviewsWithHighlights(self, highlights):
+        keys = []
         for highlight in highlights:
-            tmp = highlight[0].split(" ")
-            if (tmp[0] in review and tmp[1] in review):
-                reviewsWithHighlights[highlight[0]].append(review)
-    return reviewsWithHighlights
+            keys.append(highlight[0])
 
-def main():
-    tick = datetime.now()
-    title = "Doctor Strange"
-    
-    reviews = scrapMovieReview(title, 5)
-
-
-    sa = SentimentAnalyzer()
-    sentiment = sa.classifyReviews(reviews)
-
-    print title + "\n"
-
-    total = len(sentiment["neg"]) + len(sentiment["pos"])
-    print "negative review : " + str(len(sentiment["neg"])) + "\n"
-    print "positive review : " + str(len(sentiment["pos"])) + "\n"
-    print "======================"
-
-    highlights = getHighlight(reviews)
-    highlightReviews = getReviewsWithHighlights(highlights, reviews)
-
-    for highlight in highlights:
-        print "======================="
-        print "\n" + highlight[0] + "\n"
-        print "======================="
-        for review in highlightReviews[highlight[0]]:
-            print review
-
-    # print(highlight)
-    tock = datetime.now()   
-    diff = tock - tick    # the result is a datetime.timedelta object
-    print("Time Elapsed: " + str(diff.total_seconds()))
-
-if __name__ == "__main__":
-    main()
+        reviewsWithHighlights = {key: [] for key in keys}
+        for review in self.reviews:
+            for highlight in highlights:
+                tmp = highlight[0].split(" ")
+                if (tmp[0] in review and tmp[1] in review):
+                    reviewsWithHighlights[highlight[0]].append(review)
+        return reviewsWithHighlights
