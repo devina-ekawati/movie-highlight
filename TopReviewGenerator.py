@@ -4,7 +4,6 @@ import operator
 import spacy
 import sys
 import threading
-from spacy.en import English
 from spacy.symbols import *
 from MovieCriticSite import MovieCriticSite
 from datetime import datetime
@@ -14,17 +13,17 @@ from SentimentAnalyzer import SentimentAnalyzer
 
 class TopReviewGenerator:
 
-    def __init__(self, film):
+    def __init__(self, film, nlp, classifier):
         print(film)
         tick = datetime.now()
         
-        self.nlp = English() 
+        self.nlp = nlp 
         
         self.film = film        
         self.reviews = []
         self.scrapMovieReview(self.film, 5)
         
-        sa = SentimentAnalyzer()
+        sa = SentimentAnalyzer(classifier)
         sa.classifyReviews(self.reviews)
         self.sentiment = sa.getClassifyResults()
 

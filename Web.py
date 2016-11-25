@@ -1,11 +1,18 @@
 # encoding=utf8  
 import os
 import random
+from spacy.en import English
+from nltk.classify import NaiveBayesClassifier
 from flask import Flask, request, session, redirect, url_for, render_template
 
 from TopReviewGenerator import TopReviewGenerator 
 
 app = Flask(__name__)
+nlp = English() 
+
+source = open('data/trainData', 'rb').read()
+trainData = eval(source)
+classifier = NaiveBayesClassifier.train(trainData)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -17,7 +24,7 @@ def index():
 def get_result():
     keyword = request.form.get('keyword', None)
 
-    review = TopReviewGenerator(keyword)
+    review = TopReviewGenerator(keyword, nlp, classifier)
 
     highlights = review.getHighlight()
     highlightedReview = review.getReviewsWithHighlights(highlights)

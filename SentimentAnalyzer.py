@@ -2,7 +2,7 @@ import collections
 import re
 import itertools
 import threading
-import json
+import pickle
 import nltk.classify.util, nltk.metrics
 from nltk.classify import NaiveBayesClassifier
 from nltk.corpus import movie_reviews
@@ -14,11 +14,19 @@ from datetime import datetime
 
 class SentimentAnalyzer:
 
-    def __init__(self):
+    def __init__(self, classifier):
         self.results = {}
+        self.classifier = classifier
+
+    def prepareModel(self):
         source = open('data/trainData', 'rb').read()
-        self.trainData = eval(source)
-        self.classifier = NaiveBayesClassifier.train(self.trainData)
+        trainData = eval(source)
+        classifier = NaiveBayesClassifier.train(self.trainData)
+        
+        f = open('data/model.pickle', 'wb')
+        pickle.dump(classifier, f, pickle.HIGHEST_PROTOCOL)
+        f.close()
+
 
     def prepareBigramData(self):
         negids = movie_reviews.fileids('neg')
@@ -34,12 +42,9 @@ class SentimentAnalyzer:
         print("All thread finished collectin data at " + str(tock))
 
         trainData = negData + posData
-
-        #with open('data/trainData', 'wb') as dump:
-        #    dump.write(json.dumps(trainData))
         
-        with open('data/trainData', 'wb') as dump:
-            dump.write(str(trainData))
+        # with open('data/trainData', 'wb') as dump:
+        #     dump.write(str(trainData))
 
 
     def getClassifyResults(self):

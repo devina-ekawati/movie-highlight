@@ -5,4 +5,4 @@ from SentimentAnalyzer import SentimentAnalyzer
 # print(review.getTimeElapsed())
 
 sa = SentimentAnalyzer()
-sa.prepareBigramData()
+#sa.prepareBigramData()
