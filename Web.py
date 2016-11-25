@@ -1,7 +1,8 @@
 # encoding=utf8  
 import os
 import random
-import wikipedia
+import requests
+import json
 from spacy.en import English
 from nltk.classify import NaiveBayesClassifier
 from flask import Flask, request, session, redirect, url_for, render_template
@@ -24,8 +25,15 @@ def index():
 
 def get_result():
     keyword = request.form.get('keyword', None)
-    movie = wikipedia.page(keyword + ' film')
-    moviePlot = movie.content.split("== Plot ==")[0]
+    #movie = wikipedia.page(keyword + ' film')
+    #moviePlot = movie.content.split("== Plot ==")[0]
+
+    film_info = requests.get("http://www.omdbapi.com?t=" + keyword + "&y=&plot=short&r=json")
+    info = film_info.json()
+
+    movie = info["Title"] + " (" + info["Year"] + ")"
+    moviePlot = info["Plot"]
+    moviePoster = info["Poster"]
 
     review = TopReviewGenerator(keyword, nlp, classifier)
 
@@ -35,4 +43,4 @@ def get_result():
     negativeReview = review.getNegativeReviewsCount()
     timeElapsed = review.getTimeElapsed()
 
-    return render_template('index.html', key=keyword, movieStory = movie, movieIntro = moviePlot, result=highlights, reviewPerHighlight=highlightedReview, posCount=positiveReview, negCount=negativeReview, time=timeElapsed)
+    return render_template('index.html', key=keyword, movieTitle = movie, movieIntro = moviePlot, moviePicture = moviePoster, result=highlights, reviewPerHighlight=highlightedReview, posCount=positiveReview, negCount=negativeReview, time=timeElapsed)
