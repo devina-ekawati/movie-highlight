@@ -1,6 +1,7 @@
 # encoding=utf8  
 import os
 import random
+import wikipedia
 from spacy.en import English
 from nltk.classify import NaiveBayesClassifier
 from flask import Flask, request, session, redirect, url_for, render_template
@@ -23,6 +24,8 @@ def index():
 
 def get_result():
     keyword = request.form.get('keyword', None)
+    movie = wikipedia.page(keyword + ' film')
+    moviePlot = movie.content.split("== Plot ==")[0]
 
     review = TopReviewGenerator(keyword, nlp, classifier)
 
@@ -32,4 +35,4 @@ def get_result():
     negativeReview = review.getNegativeReviewsCount()
     timeElapsed = review.getTimeElapsed()
 
-    return render_template('index.html', key=keyword, result=highlights, reviewPerHighlight=highlightedReview, posCount=positiveReview, negCount=negativeReview, time=timeElapsed)
+    return render_template('index.html', key=keyword, movieStory = movie, movieIntro = moviePlot, result=highlights, reviewPerHighlight=highlightedReview, posCount=positiveReview, negCount=negativeReview, time=timeElapsed)

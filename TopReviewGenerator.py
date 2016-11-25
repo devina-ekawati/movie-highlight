@@ -55,9 +55,10 @@ class TopReviewGenerator:
                     if possible_adjective.head.head.pos == NOUN and possible_adjective.head.orth_ != possible_adjective.head.head.orth_:
                         termFrase += ' ' + possible_adjective.head.head.orth_
 
-                    blob = TextBlob(termFrase)
-                    if (blob.sentences[0].sentiment.polarity > 0.15 or blob.sentences[0].sentiment.polarity < -0.15):
-                        terms[termFrase] = terms.get(termFrase, 0) + 1
+                    if (termFrase.lower() != "full review"):
+                        blob = TextBlob(termFrase)
+                        if (blob.sentences[0].sentiment.polarity > 0.15 or blob.sentences[0].sentiment.polarity < -0.15):
+                            terms[termFrase] = terms.get(termFrase, 0) + 1
 
         sorted_term = sorted(terms.items(), key=operator.itemgetter(1), reverse=True)
         top_term = sorted_term[:10]

@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 </head>
 <body>
@@ -32,20 +33,61 @@
     {% else %}
 
       <div class="row">
-        <center><h2>{{ key }} Reviews</h2></center>
+        <center><h2>{{ movieStory.title }}</h2></center>
       </div>
       <hr>
 
-      <center><h4>{{ posCount }} positive - {{ negCount }} negative</h4></center>
+      <div class="container">
+        <div class="col-md-4">
+          <center><img src={{movieStory.images[3]}}></center>
+        </div>
+        <div class="col-md-8">
+          {{ movieIntro }} 
+          </div>
+        </div>
+      <hr>
+
+      <div class="row">
+        <center><h3>Reviews</h3></center>
+        <center><h4>{{ posCount }} <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span> - {{ negCount }} <span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span> </h4></center>
+      </div>
+
 
       <hr>
 
       <div class="row">
       {% for r in result %}
           <div class="col-md-6">
-            <h3>"{{ r[0] }}"</h3>
+            {% set target = "#"+r[0] %}
+            <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target={{target}}>
+              {{ r[0] }}
+            </button>
             <div class="well">
               {{ reviewPerHighlight[r[0]][0] }}
+            </div>
+            
+          </div>
+          <!-- Modal -->
+          <div class="modal fade" id={{r[0]}} role="dialog">
+            <div class="modal-dialog">
+            
+              <!-- Modal content-->
+              <div class="modal-content">
+                <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal">&times;</button>
+                  <center><h3 class="modal-title">{{ r[0] }}</h3></center>
+                </div>
+                <div class="modal-body">
+                  {% for review in reviewPerHighlight[r[0]] %}
+                  <div class="well">
+                    {{ review }}
+                  </div>
+                  {% endfor %}
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+              </div>
             </div>
           </div>
       {% endfor %}
@@ -58,7 +100,6 @@
       <br/><br/><br/>
 
     {% endif %}
-
   </div>
 </body>
 </html>
