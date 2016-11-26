@@ -33,17 +33,25 @@
     {% else %}
 
       <div class="row">
-        <center><h2>{{ movieTitle }}</h2></center>
+        <center><h2>{{ movieInfo["Title"] }} ({{ movieInfo["Year"] }})</h2></center>
       </div>
       <hr>
 
       <div class="container">
         <div class="col-md-4">
-          <center><img src={{moviePicture}} width="100%"></center>
+          <center><img src="{{ movieInfo['Poster'] }}" width="50%"></center>
         </div>
         <div class="col-md-8">
-          {{ movieIntro }} 
-          </div>
+          {{ movieInfo["Plot"] }} 
+          <br/><br/>
+          Released: {{ movieInfo["Released"] }}
+          <br/>
+          Runtime: {{ movieInfo["Runtime"] }} 
+          <br/>
+          Genre: {{ movieInfo["Genre"] }} 
+          <br/>
+          Rating: {{ movieInfo["Rated"] }} 
+        </div>
         </div>
       <hr>
 

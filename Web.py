@@ -31,10 +31,6 @@ def get_result():
     film_info = requests.get("http://www.omdbapi.com?t=" + keyword + "&y=&plot=short&r=json")
     info = film_info.json()
 
-    movie = info["Title"] + " (" + info["Year"] + ")"
-    moviePlot = info["Plot"]
-    moviePoster = info["Poster"]
-
     review = TopReviewGenerator(keyword, nlp, classifier)
 
     highlights = review.getHighlight()
@@ -43,4 +39,4 @@ def get_result():
     negativeReview = review.getNegativeReviewsCount()
     timeElapsed = review.getTimeElapsed()
 
-    return render_template('index.html', key=keyword, movieTitle = movie, movieIntro = moviePlot, moviePicture = moviePoster, result=highlights, reviewPerHighlight=highlightedReview, posCount=positiveReview, negCount=negativeReview, time=timeElapsed)
+    return render_template('index.html', key=keyword, movieInfo = info, result=highlights, reviewPerHighlight=highlightedReview, posCount=positiveReview, negCount=negativeReview, time=timeElapsed)
